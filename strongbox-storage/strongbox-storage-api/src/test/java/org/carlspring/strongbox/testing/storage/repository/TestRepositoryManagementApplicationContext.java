@@ -19,8 +19,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import org.carlspring.strongbox.configuration.ConfigurationUtils;
 import org.carlspring.strongbox.testing.artifact.TestArtifact;
 import org.carlspring.strongbox.testing.artifact.TestArtifactContext;
+import org.carlspring.strongbox.testing.storage.repository.TestRepository.Group;
+import org.carlspring.strongbox.testing.storage.repository.TestRepository.Remote;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -31,6 +34,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.Assert;
 
@@ -113,8 +117,8 @@ public class TestRepositoryManagementApplicationContext extends AnnotationConfig
         int index = parameterContext.getIndex();
         int count = parameterContext.getDeclaringExecutable().getParameterCount();
         extensionsToApply.put(extensionType, index == (count - 1));
-
-        return parameterContext.isAnnotated(extensionType);
+        
+        return AnnotatedElementUtils.isAnnotated(parameterContext.getParameter(), extensionType);
     }
 
     @Override
@@ -302,18 +306,31 @@ public class TestRepositoryManagementApplicationContext extends AnnotationConfig
     }
 
     @Override
-    public void register(TestRepository testRepository)
+    public void register(TestRepository testRepository,
+                         Remote remoteRepository,
+                         Group groupRepository)
     {
         idSync.putIfAbsent(id(testRepository), new ReentrantLock());
-        registerBean(id(testRepository), TestRepositoryContext.class, testRepository);
+        registerBean(id(testRepository), TestRepositoryContext.class, testRepository, remoteRepository, groupRepository);
+        
+        if (groupRepository == null)
+        {
+            return;
+        }
+        
+        Arrays.stream(groupRepository.repositories()).forEach(r -> {
+            BeanDefinition beanDefinition = getBeanDefinition(id(ConfigurationUtils.getStorageId(testRepository.storage(), r), ConfigurationUtils.getRepositoryId(r)));
+            beanDefinition.setDependsOn(id(testRepository));
+        });
     }
 
     @Override
     public void register(TestArtifact testArtifact,
+                         Map<String, Object> attributesMap,
                          TestInfo testInfo)
     {
         idSync.putIfAbsent(id(testArtifact), new ReentrantLock());
-        registerBean(id(testArtifact), TestArtifactContext.class, testArtifact, testInfo);
+        registerBean(id(testArtifact), TestArtifactContext.class, testArtifact, attributesMap, testInfo);
         if (testArtifact.repository().isEmpty())
         {
             return;

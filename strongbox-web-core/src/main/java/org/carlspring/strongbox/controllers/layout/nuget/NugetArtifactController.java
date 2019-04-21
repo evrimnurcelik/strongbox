@@ -2,6 +2,7 @@ package org.carlspring.strongbox.controllers.layout.nuget;
 
 import org.carlspring.strongbox.artifact.ArtifactTag;
 import org.carlspring.strongbox.artifact.coordinates.PathNupkg;
+import org.carlspring.strongbox.artifact.coordinates.versioning.SemanticVersion;
 import org.carlspring.strongbox.controllers.BaseArtifactController;
 import org.carlspring.strongbox.data.criteria.Expression.ExpOperator;
 import org.carlspring.strongbox.data.criteria.Paginator;
@@ -19,10 +20,14 @@ import org.carlspring.strongbox.repository.NugetRepositoryFeatures.RepositorySea
 import org.carlspring.strongbox.services.ArtifactManagementService;
 import org.carlspring.strongbox.services.ArtifactTagService;
 import org.carlspring.strongbox.storage.Storage;
+import org.carlspring.strongbox.storage.metadata.nuget.NugetFormatException;
+import org.carlspring.strongbox.storage.metadata.nuget.Nupkg;
 import org.carlspring.strongbox.storage.metadata.nuget.Nuspec;
 import org.carlspring.strongbox.storage.metadata.nuget.TempNupkgFile;
+import org.carlspring.strongbox.storage.metadata.nuget.rss.EntryProperties;
+import org.carlspring.strongbox.storage.metadata.nuget.rss.PackageEntry;
+import org.carlspring.strongbox.storage.metadata.nuget.rss.PackageFeed;
 import org.carlspring.strongbox.storage.repository.Repository;
-import org.semver.Version;
 
 import javax.inject.Inject;
 import javax.servlet.ServletInputStream;
@@ -59,9 +64,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import ru.aristar.jnuget.files.NugetFormatException;
-import ru.aristar.jnuget.files.Nupkg;
-import ru.aristar.jnuget.rss.*;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 /**
@@ -265,21 +267,6 @@ public class NugetArtifactController extends BaseArtifactController
                 return feedId;
             }
         };
-    }
-
-    protected Comparator<PackageEntry> getPackageComparator(final String orderByClause)
-    {
-        final String normalOrderBy = orderByClause == null ? "" : orderByClause.toLowerCase();
-        switch (normalOrderBy)
-        {
-        case "updated":
-            return new PackageUpdateDateDescComparator();
-        case "downloadcount":
-            return new PackageDownloadCountComparator();
-        default:
-            return new PackageIdAndVersionComparator();
-        }
-
     }
 
     @GetMapping(path = { "{storageId}/{repositoryId}/FindPackagesById()" }, produces = MediaType.APPLICATION_XML)
@@ -656,7 +643,8 @@ public class NugetArtifactController extends BaseArtifactController
             }
 
             String nuspecId = nuspec.getId();
-            Version nuspecVersion = nuspec.getVersion();
+
+            SemanticVersion nuspecVersion = nuspec.getVersion();
             String path = String.format("%s/%s/%s.%s.nupkg",
                                         nuspecId,
                                         nuspecVersion,

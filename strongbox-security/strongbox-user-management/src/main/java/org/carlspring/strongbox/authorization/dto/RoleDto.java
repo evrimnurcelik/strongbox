@@ -1,10 +1,5 @@
 package org.carlspring.strongbox.authorization.dto;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,26 +9,14 @@ import com.google.common.base.Objects;
 /**
  * @author mtodorov
  */
-@XmlRootElement(name = "role")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class RoleDto
         implements Serializable
 {
 
-    @XmlElement
     private String name;
 
-    @XmlElement
     private String description;
 
-    /**
-     * The repository this role is associated with.
-     */
-    @XmlElement
-    private String repository;
-
-    @XmlElement(name = "privilege")
-    @XmlElementWrapper(name = "privileges")
     private Set<String> privileges = new HashSet<>();
 
 
@@ -90,16 +73,6 @@ public class RoleDto
         this.description = description;
     }
 
-    public String getRepository()
-    {
-        return repository;
-    }
-
-    public void setRepository(String repository)
-    {
-        this.repository = repository;
-    }
-
     public Set<String> getPrivileges()
     {
         return privileges;
@@ -131,7 +104,6 @@ public class RoleDto
         final StringBuilder sb = new StringBuilder("\n\t\tRole{");
         sb.append("name='").append(name).append('\'');
         sb.append(", description='").append(description).append('\'');
-        sb.append(", repository='").append(repository).append('\'');
         sb.append(", privileges=").append(privileges);
         sb.append('}');
 

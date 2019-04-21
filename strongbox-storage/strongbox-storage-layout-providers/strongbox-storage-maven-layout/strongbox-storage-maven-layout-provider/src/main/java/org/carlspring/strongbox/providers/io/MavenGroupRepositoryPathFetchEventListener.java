@@ -1,6 +1,7 @@
 package org.carlspring.strongbox.providers.io;
 
 import org.carlspring.strongbox.configuration.ConfigurationManager;
+import org.carlspring.strongbox.configuration.ConfigurationUtils;
 import org.carlspring.strongbox.providers.layout.Maven2LayoutProvider;
 import org.carlspring.strongbox.providers.repository.GroupRepositoryProvider;
 import org.carlspring.strongbox.providers.repository.RepositoryProvider;
@@ -74,10 +75,10 @@ public class MavenGroupRepositoryPathFetchEventListener
         Storage storage = groupRepository.getStorage();
         List<Callable<Path>> fetchActions = new ArrayList<>();
 
-        for (String storageAndRepositoryId : groupRepository.getGroupRepositories().keySet())
+        for (String storageAndRepositoryId : groupRepository.getGroupRepositories())
         {
-            String sId = configurationManager.getStorageId(storage, storageAndRepositoryId);
-            String rId = configurationManager.getRepositoryId(storageAndRepositoryId);
+            String sId = ConfigurationUtils.getStorageId(storage.getId(), storageAndRepositoryId);
+            String rId = ConfigurationUtils.getRepositoryId(storageAndRepositoryId);
             Repository subRepository = configurationManager.getRepository(sId, rId);
 
             if (!subRepository.isInService())

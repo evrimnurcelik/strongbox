@@ -1,6 +1,7 @@
 package org.carlspring.strongbox.providers.repository.group;
 
 import org.carlspring.strongbox.configuration.ConfigurationManager;
+import org.carlspring.strongbox.configuration.ConfigurationUtils;
 import org.carlspring.strongbox.storage.Storage;
 import org.carlspring.strongbox.storage.repository.Repository;
 
@@ -32,7 +33,6 @@ public class GroupRepositorySetCollector
                                    boolean traverse)
     {
         Set<Repository> result = groupRepository.getGroupRepositories()
-                                                .keySet()
                                                 .stream()
                                                 .map(groupRepoId -> getRepository(groupRepository.getStorage(),
                                                                                   groupRepoId))
@@ -47,7 +47,7 @@ public class GroupRepositorySetCollector
         for (Iterator<Repository> i = result.iterator(); i.hasNext(); )
         {
             Repository r = i.next();
-            if (CollectionUtils.isEmpty(r.getGroupRepositories().keySet()))
+            if (CollectionUtils.isEmpty(r.getGroupRepositories()))
             {
                 traverseResult.add(r);
                 continue;
@@ -63,8 +63,8 @@ public class GroupRepositorySetCollector
     private Repository getRepository(Storage storage,
                                      String id)
     {
-        String sId = configurationManager.getStorageId(storage, id);
-        String rId = configurationManager.getRepositoryId(id);
+        String sId = ConfigurationUtils.getStorageId(storage.getId(), id);
+        String rId = ConfigurationUtils.getRepositoryId(id);
 
         return configurationManager.getConfiguration().getStorage(sId).getRepository(rId);
     }

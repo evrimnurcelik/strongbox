@@ -32,7 +32,7 @@
         <url>http://www.carlspring.org/</url>
     </organization>
 
-    <inceptionYear>2018</inceptionYear>
+    <inceptionYear>2019</inceptionYear>
 
     <scm>
         <url>https://github.com/strongbox/strongbox/</url>
@@ -64,8 +64,7 @@
                     <systemPropertyVariables>
                         <strongbox.home>${basedir}/target/strongbox</strongbox.home>
                         <strongbox.vault>${basedir}/target/strongbox-vault</strongbox.vault>
-                        <strongbox.storage.booter.basedir>${basedir}/target/strongbox-vault/storages
-                        </strongbox.storage.booter.basedir>
+                        <strongbox.storage.booter.basedir>${basedir}/target/strongbox-vault/storages</strongbox.storage.booter.basedir>
                         <port.jetty.listen>${port.jetty.listen}</port.jetty.listen>
                     </systemPropertyVariables>
                 </configuration>
@@ -151,11 +150,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ru.aristar.nuget</groupId>
-            <artifactId>jnuget-core</artifactId>
         </dependency>
     </dependencies>
 
